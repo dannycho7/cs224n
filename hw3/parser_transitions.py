@@ -51,7 +51,7 @@ class PartialParse(object):
         ###     described in the pdf handout:
         ###         1. Shift
         ###         2. Left Arc
-        ###         3. Right Arc
+        ###         3. Right Arc    
         if transition == "S":
             self.stack.append(self.buffer[0])
             self.buffer = self.buffer[1:]
@@ -111,8 +111,18 @@ def minibatch_parse(sentences, model, batch_size):
     ###             contains references to the same objects. Thus, you should NOT use the `del` operator
     ###             to remove objects from the `unfinished_parses` list. This will free the underlying memory that
     ###             is being accessed by `partial_parses` and may cause your code to crash.
-
-
+    partial_parses = [PartialParse(sentence) for sentence in sentences]
+    unfinished_parses = partial_parses[:]
+    while len(unfinished_parses) > 0:
+        minibatch = unfinished_parses[:batch_size + 1]
+        transitions = model.predict(minibatch)
+        still_unfinished = []
+        for i, partial_parse in enumerate(minibatch):
+            partial_parse.parse_step(transitions[i])
+            if len(partial_parse.buffer) > 0 or len(partial_parse.stack) > 1:
+                still_unfinished.append(partial_parse)
+        unfinished_parses = still_unfinished + unfinished_parses[batch_size + 1:]
+    dependencies = [partial_parse.dependencies for partial_parse in partial_parses]
     ### END YOUR CODE
 
     return dependencies
