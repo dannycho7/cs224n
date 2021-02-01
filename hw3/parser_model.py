@@ -72,10 +72,18 @@ class ParserModel(nn.Module):
         ###     Dropout: https://pytorch.org/docs/stable/nn.html#dropout-layers
         ### 
         ### See the PDF for hints.
-
-
-
-
+        # h should ouptut shape of (1, hidden_size)
+        dm = self.embed_size * self.n_features
+        self.embed_to_hidden_weight = nn.Parameter(torch.zeros(dm, self.hidden_size))
+        nn.init.xavier_uniform_(self.embed_to_hidden_weight)
+        self.embed_to_hidden_bias = nn.Parameter(torch.zeros(1, self.hidden_size))
+        nn.init.uniform_(self.embed_to_hidden_bias)
+        self.dropout = torch.nn.Dropout(self.dropout_prob)
+        # l should output shape of (1, n_classes)
+        self.hidden_to_logits_weight = nn.Parameter(torch.zeros(self.hidden_size, self.n_classes))
+        nn.init.xavier_uniform_(self.hidden_to_logits_weight)
+        self.hidden_to_logits_bias = nn.Parameter(torch.zeros(1, self.n_classes))
+        nn.init.uniform_(self.hidden_to_logits_bias)
         ### END YOUR CODE
 
     def embedding_lookup(self, w):
@@ -106,9 +114,8 @@ class ParserModel(nn.Module):
         ###     Gather: https://pytorch.org/docs/stable/torch.html#torch.gather
         ###     View: https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
         ###     Flatten: https://pytorch.org/docs/stable/generated/torch.flatten.html
-
-
-
+        batch_size = w.shape[0]
+        x = torch.reshape(torch.index_select(self.embeddings, 0, torch.flatten(w)), (batch_size, self.n_features * self.embed_size))
         ### END YOUR CODE
         return x
 
@@ -143,8 +150,10 @@ class ParserModel(nn.Module):
         ### Please see the following docs for support:
         ###     Matrix product: https://pytorch.org/docs/stable/torch.html#torch.matmul
         ###     ReLU: https://pytorch.org/docs/stable/nn.html?highlight=relu#torch.nn.functional.relu
-
-
+        relu = nn.ReLU()
+        xs = self.embedding_lookup(w)
+        hs = self.dropout(relu(torch.matmul(xs, self.embed_to_hidden_weight) + self.embed_to_hidden_bias))
+        logits = torch.matmul(hs, self.hidden_to_logits_weight) + self.hidden_to_logits_bias
         ### END YOUR CODE
         return logits
 
