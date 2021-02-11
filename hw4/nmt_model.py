@@ -82,7 +82,7 @@ class NMT(nn.Module):
         self.c_projection = nn.Linear(2 * hidden_size, hidden_size, bias=False)
         self.att_projection = nn.Linear(2 * hidden_size, hidden_size, bias=False)
         self.combined_output_projection = nn.Linear(3 * hidden_size, hidden_size, bias=False)
-        self.target_vocab_projection = nn.Linear(hidden_size, hidden_size, bias=False)
+        self.target_vocab_projection = nn.Linear(hidden_size, len(self.vocab.tgt), bias=False)
         self.dropout = nn.Dropout(dropout_rate)
         ### END YOUR CODE
 
@@ -116,7 +116,6 @@ class NMT(nn.Module):
         enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
         combined_outputs = self.decode(enc_hiddens, enc_masks, dec_init_state, target_padded)
         P = F.log_softmax(self.target_vocab_projection(combined_outputs), dim=-1)
-
         # Zero out, probabilities for which we have nothing in the target text
         target_masks = (target_padded != self.vocab.tgt['<pad>']).float()
         
@@ -251,7 +250,7 @@ class NMT(nn.Module):
         Y = self.model_embeddings.target(target_padded)
         for Y_t in torch.split(Y, 1):
             Y_t = torch.squeeze(Y_t)
-            Ybar_t = torch.cat((Y_t, o_prev))
+            Ybar_t = torch.cat((Y_t, o_prev), 1)
             dec_state, o_t, _ = self.step(Ybar_t, dec_state, enc_hiddens, enc_hiddens_proj, enc_masks)
             combined_outputs.append(o_t)
             o_prev = o_t
