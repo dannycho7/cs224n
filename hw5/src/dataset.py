@@ -168,7 +168,7 @@ class CharCorruptionDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        # TODO [part e]: see spec above
+        # [part e]: see spec above
         doc = self.data[idx]
         truncated_len = random.randint(4, 1 + int(self.block_size * 7/8))
         doc = doc[:truncated_len]

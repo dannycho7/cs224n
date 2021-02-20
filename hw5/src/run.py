@@ -55,18 +55,20 @@ Don't change above here; write your code below
 """
 
 if args.variant == 'vanilla':
-    # TODO [part c]: Make some model here
+    # [part c]: Make some model here
     model_inst = model.GPT(mconf)
 elif args.variant == 'synthesizer':
-    pass # TODO [part g]: Make some other model here
+    # [part g]: Make some other model here
+    model_inst = attention.SynthesizerAttention(mconf)
 
+model_inst.to(device)
 # From here on, your code should be identical independent of which
 # variant (vanilla or synthesizer) has been chosen.
 
 if args.function == 'pretrain':
     assert args.pretrain_corpus_path is not None
     assert args.writing_params_path is not None
-    # TODO [part f]:
+    # [part f]:
     # - Given:
     #     1. A corpus specified in args.pretrain_corpus_path
     #     2. An output path args.writing_params_path for the model parameters
@@ -95,7 +97,7 @@ if args.function == 'pretrain':
 elif args.function == 'finetune':
     assert args.writing_params_path is not None
     assert args.finetune_corpus_path is not None
-    # TODO [part c] [part f]:
+    # [part c] [part f]:
     # - Given:
     #     1. A finetuning corpus specified in args.finetune_corpus_path
     #     2. A path args.reading_params_path containing pretrained model
@@ -147,7 +149,7 @@ elif args.function == 'finetune':
         model_inst.load_state_dict(args.reading_params_path)
     trainer_inst = trainer.Trainer(model_inst, train_dataset, None, tconf)
     trainer_inst.train()
-    torch.save(model_inst, args.writing_params_path)
+    torch.save(model_inst.state_dict(), args.writing_params_path)
 elif args.function == 'evaluate':
     assert args.outputs_path is not None
     assert args.reading_params_path is not None
