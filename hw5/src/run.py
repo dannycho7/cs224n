@@ -95,7 +95,7 @@ if args.function == 'pretrain':
         num_workers=4)
     trainer_inst = trainer.Trainer(model_inst, pretrain_dataset, None, tconf)
     trainer_inst.train()
-    torch.save(model_inst, args.writing_params_path)
+    torch.save(model_inst.state_dict(), args.writing_params_path)
 elif args.function == 'finetune':
     assert args.writing_params_path is not None
     assert args.finetune_corpus_path is not None
