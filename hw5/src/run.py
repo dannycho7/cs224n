@@ -81,7 +81,17 @@ if args.function == 'pretrain':
     #     warmup_tokens=512*20
     #     final_tokens=200*len(pretrain_dataset)*block_size
     #     num_workers=4
-    raise NotImplementedError
+    tconf = trainer.TrainerConfig(
+        max_epochs=650,
+        batch_size=128,
+        learning_rate=6e-3,
+        lr_decay=True,
+        warmup_tokens=512*20,
+        final_tokens=200*len(pretrain_dataset)*block_size,
+        num_workers=4)
+    trainer_inst = trainer.Trainer(model_inst, pretrain_dataset, None, tconf)
+    trainer_inst.train()
+    torch.save(model_inst, args.writing_params_path)
 elif args.function == 'finetune':
     assert args.writing_params_path is not None
     assert args.finetune_corpus_path is not None
@@ -115,7 +125,7 @@ elif args.function == 'finetune':
     #         num_workers=4
     data = open(args.finetune_corpus_path, "r").read()
     train_dataset = dataset.NameDataset(pretrain_dataset, data)
-    if args.variant == 'vanilla':
+    if args.reading_params_path is None:
         # without pretrained model
         tconf = trainer.TrainerConfig(
             max_epochs=75,
@@ -126,7 +136,15 @@ elif args.function == 'finetune':
             final_tokens=200*len(pretrain_dataset)*block_size,
             num_workers=4)
     else:
-        pass
+        tconf = trainer.TrainerConfig(
+            max_epochs=10,
+            batch_size=256,
+            learning_rate=6e-4,
+            lr_decay=True,
+            warmup_tokens=512*20,
+            final_tokens=200*len(pretrain_dataset)*block_size,
+            num_workers=4)
+        model_inst.load_state_dict(args.reading_params_path)
     trainer_inst = trainer.Trainer(model_inst, train_dataset, None, tconf)
     trainer_inst.train()
     torch.save(model_inst, args.writing_params_path)
