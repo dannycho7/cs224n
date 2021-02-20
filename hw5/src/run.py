@@ -7,6 +7,7 @@ import random
 import argparse
 random.seed(0)
 
+import attention
 import dataset
 import model
 import trainer
@@ -59,7 +60,8 @@ if args.variant == 'vanilla':
     model_inst = model.GPT(mconf)
 elif args.variant == 'synthesizer':
     # [part g]: Make some other model here
-    model_inst = attention.SynthesizerAttention(mconf)
+    mconf.synthesizer = True
+    model_inst = model.GPT(mconf)
 
 model_inst.to(device)
 # From here on, your code should be identical independent of which
