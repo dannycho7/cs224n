@@ -179,12 +179,13 @@ class CharCorruptionDataset(Dataset):
         prefix = doc[:prefix_len]
         masked_content = doc[prefix_len:-suffix_len]
         suffix = doc[-suffix_len:]
-        masked_string = prefix + self.MASK_CHAR + suffix + self.MASK_CHAR + masked_content + self.PAD_CHAR * (self.block_size - truncated_len)        
+        masked_string = prefix + self.MASK_CHAR + suffix + self.MASK_CHAR + masked_content + self.MASK_CHAR
+        masked_string += self.PAD_CHAR * (self.block_size - len(masked_string))
         x = masked_string[:-1]
         y = masked_string[1:]
         x = torch.tensor([self.stoi[c] for c in x], dtype=torch.long)
         y = torch.tensor([self.stoi[c] for c in y], dtype=torch.long)
-        return (x, y)
+        return (x,y)
 
 
 """
