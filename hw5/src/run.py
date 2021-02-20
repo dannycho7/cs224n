@@ -55,7 +55,8 @@ Don't change above here; write your code below
 """
 
 if args.variant == 'vanilla':
-    pass # TODO [part c]: Make some model here
+    # TODO [part c]: Make some model here
+    model_inst = model.GPT(mconf)
 elif args.variant == 'synthesizer':
     pass # TODO [part g]: Make some other model here
 
@@ -112,12 +113,28 @@ elif args.function == 'finetune':
     #         warmup_tokens=512*20
     #         final_tokens=200*len(pretrain_dataset)*block_size
     #         num_workers=4
-    raise NotImplementedError
+    data = open(args.finetune_corpus_path, "r").read()
+    train_dataset = dataset.NameDataset(pretrain_dataset, data)
+    if args.variant == 'vanilla':
+        # without pretrained model
+        tconf = trainer.TrainerConfig(
+            max_epochs=75,
+            batch_size=256,
+            learning_rate=6e-4,
+            lr_decay=True,
+            warmup_tokens=512*20,
+            final_tokens=200*len(pretrain_dataset)*block_size,
+            num_workers=4)
+    else:
+        pass
+    trainer_inst = trainer.Trainer(model_inst, train_dataset, None, tconf)
+    trainer_inst.train()
+    torch.save(model_inst, args.writing_params_path)
 elif args.function == 'evaluate':
     assert args.outputs_path is not None
     assert args.reading_params_path is not None
     assert args.eval_corpus_path is not None
-    model.load_state_dict(torch.load(args.reading_params_path))
+    model_inst.load_state_dict(torch.load(args.reading_params_path))
     correct = 0
     total = 0
     with open(args.outputs_path, 'w') as fout:
