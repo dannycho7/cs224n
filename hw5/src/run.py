@@ -148,7 +148,7 @@ elif args.function == 'finetune':
             warmup_tokens=512*20,
             final_tokens=200*len(pretrain_dataset)*block_size,
             num_workers=4)
-        model_inst.load_state_dict(args.reading_params_path)
+        model_inst.load_state_dict(torch.load(args.reading_params_path))
     trainer_inst = trainer.Trainer(model_inst, train_dataset, None, tconf)
     trainer_inst.train()
     torch.save(model_inst.state_dict(), args.writing_params_path)
