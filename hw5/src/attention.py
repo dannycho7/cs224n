@@ -98,7 +98,7 @@ class SynthesizerAttention(nn.Module):
         # att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
         relu = nn.ReLU()
         A = self.w1(x).view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
-        att = relu(A @ self.w2) + self.b2
+        att = relu(A @ self.w2[:, :T]) + self.b2[:T]
 
         att = att.masked_fill(self.mask[:,:,:T,:T] == 0, -1e10) # todo: just use float('-inf') instead?
         att = F.softmax(att, dim=-1)
