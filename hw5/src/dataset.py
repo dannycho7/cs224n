@@ -170,12 +170,12 @@ class CharCorruptionDataset(Dataset):
     def __getitem__(self, idx):
         # [part e]: see spec above
         doc = self.data[idx]
-        truncated_len = random.randint(4, 1 + int(self.block_size * 7/8))
+        truncated_len = min(random.randint(4, 1 + int(self.block_size * 7/8)), len(doc))
         doc = doc[:truncated_len]
         masked_len = random.randint(0, 1 + int(truncated_len/2))
         leftover = truncated_len - masked_len
         prefix_len = math.ceil(leftover / 2)
-        suffix_len = math.floor(leftover / 2)
+        suffix_len = leftover - prefix_len
         prefix = doc[:prefix_len]
         masked_content = doc[prefix_len:-suffix_len]
         suffix = doc[-suffix_len:]
